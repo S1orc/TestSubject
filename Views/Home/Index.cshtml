@@ -1,0 +1,52 @@
+﻿@using TestSubject.ViewModels
+@using TestSubject.Models
+@model IndexViewModel
+
+<style>
+    td {
+        padding: 5px;
+    }
+
+    tr:nth-child(even) {
+        background: #CCC;
+    }
+
+    tr:nth-child(odd) {
+        background: #FFF;
+    }
+</style>
+
+<form>
+    <label>Выберите категорию:</label>
+    <select name="categoryId">
+        @foreach (CategoryModel categ in Model.CategoriesModels)
+        {
+            <option value="@categ.Id">
+                "@categ.Name"
+                "@categ.ParentId"
+                "@categ.Parent"
+                "@categ.Children"
+            </option>
+        }
+    </select>
+    <input type="submit" />
+</form>
+
+<br />
+
+<table>
+    <tr>
+        <td>Name</td>
+        <td>Product</td>
+        <td>Age</td>
+    </tr>
+    @foreach (Product p in Model.ProductsModels)
+    {
+        <tr>
+            <td>@p.Id</td>
+            <td>@p.Name</td>
+            <td>@p.Description</td>
+            <td>@p.Category.Name</td>
+        </tr>
+    }
+</table>
