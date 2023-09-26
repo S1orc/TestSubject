@@ -15,7 +15,7 @@ namespace TestSubject.Controllers
 
         public async Task <IActionResult> Index(int? categoryId)
         {
-            var products = db.Products.Where(p => p.Category.Id == categoryId).ToList();
+            var products = db.Products.ToList();
             var categories = db.Categories.ToList();
 
             List<CategoryModel> categModels = categories
