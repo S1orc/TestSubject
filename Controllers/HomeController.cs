@@ -15,6 +15,7 @@ namespace TestSubject.Controllers
 
         public async Task <IActionResult> Index(int? categoryId)
         {
+            //Комментарий для проверки
             var products = db.Products.ToList();
             var categories = db.Categories.ToList();
 
