@@ -1,0 +1,11 @@
+﻿@model IndexViewModel
+@using TestSubject.Models
+@using TestSubject.ViewModels
+
+<div class="category">  
+    <label>Категории:</label>
+    @foreach(var category in Model.CategoriesModels)
+    {
+        <option value="@category.Id">@category.Name</option>
+    }
+</div>

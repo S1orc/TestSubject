@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks.Dataflow;
 using TestSubject.Models;
 using TestSubject.ViewModels;
 
@@ -8,30 +9,26 @@ namespace TestSubject.Controllers
     public class HomeController : Controller
     {
         ApplicationContext db;
-        public HomeController (ApplicationContext context)
+        public HomeController(ApplicationContext context)
         {
             db = context;
         }
 
-        public async Task <IActionResult> Index(int? categoryId)
+        public async Task<IActionResult> Index()
         {
-            //Комментарий для проверки
-            var products = db.Products.ToList();
-            var categories = db.Categories.ToList();
+            List<Category> categories = db.Categories.ToList();
+            List<Product> products = db.Products.ToList();
+            List<CategoryModel> categoryModels = categories.Select(c => new CategoryModel(c.Id, c.Name, c.ParentId, c.Parent)).ToList();
+            List<ProductModel> productModels = products.Select(p => new ProductModel(p.Id, p.Name, p.Description, p.CategoryId, p.Category)).ToList();
 
-            List<CategoryModel> categModels = categories
-                .Select(c => new CategoryModel(c.Id, c.Name, c.ParentId, c.Parent, c.Children)).ToList();
-
-            categModels.Insert(0, new CategoryModel(0, "все", null, null, null));
-
-            IndexViewModel viewModel = new() { CategoriesModels = categModels, ProductsModels = products };
-
-            if (categoryId != null && categoryId > 0)
-            {
-                viewModel.ProductsModels = products.Where(p => p.Category.Id == categoryId);
-            }
-
+            IndexViewModel viewModel = new() { CategoriesModels= categoryModels, ProductsModels = productModels };
             return View(viewModel);
         }
+
+        /*        public IActionResult Index()
+                {
+                    var rootCategories = db.Categories.Where(c => c.ParentId == null).ToList();
+                    return View(rootCategories);
+                }*/
     }
 }

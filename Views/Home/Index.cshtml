@@ -1,6 +1,6 @@
-﻿@using TestSubject.ViewModels
+﻿@model IndexViewModel
 @using TestSubject.Models
-@model IndexViewModel
+@using TestSubject.ViewModels
 
 <style>
     td {
@@ -16,37 +16,19 @@
     }
 </style>
 
-<form>
-    <label>Выберите категорию:</label>
-    <select name="categoryId">
-        @foreach (CategoryModel categ in Model.CategoriesModels)
-        {
-            <option value="@categ.Id">
-                "@categ.Name"
-                "@categ.ParentId"
-                "@categ.Parent"
-                "@categ.Children"
-            </option>
-        }
-    </select>
-    <input type="submit" />
-</form>
-
-<br />
-
-<table>
-    <tr>
-        <td>Name</td>
-        <td>Product</td>
-        <td>Age</td>
-    </tr>
-    @foreach (Product p in Model.ProductsModels)
+<div class="category">  
+    <label>Категории и продукты:</label>
+    @foreach(CategoryModel categ in Model.CategoriesModels)
     {
-        <tr>
-            <td>@p.Id</td>
-            <td>@p.Name</td>
-            <td>@p.Description</td>
-            <td>@p.Category.Name</td>
-        </tr>
+        <h1><option value="@categ.Id">@categ.Name:</option></h1>
+
+
+        @foreach (ProductModel prod in Model.ProductsModels)
+        {
+            if (prod.ParentId == categ.Id)
+            {
+              <h4><option value="@prod.Id">@prod.Name</option></h4>
+            }
+        }
     }
-</table>
+</div>
