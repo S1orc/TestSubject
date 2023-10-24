@@ -1,11 +1,19 @@
-﻿@model IndexViewModel
-@using TestSubject.Models
-@using TestSubject.ViewModels
+﻿@model TestSubject.Models.Category
 
-<div class="category">  
-    <label>Категории:</label>
-    @foreach(var category in Model.CategoriesModels)
+<div data-id="@Model.Id" class="category-item">  
+    @Html.DisplayFor(model => model.Name)
+
+    @if (Model.Children != null && Model.Children.Any())
     {
-        <option value="@category.Id">@category.Name</option>
+        <u1>
+            @foreach (var subCategory in Model.Children)
+            {
+                <li>
+                    @Html.DisplayFor(modelItem => subCategory.Name)
+                    @Html.DisplayFor(modelItem => subCategory.Children, "CategoryPartial")
+                </li>
+            }
+        </u1>
     }
+@*    @{await Html.RenderPartialAsync("ProductPartial", Model.Id);}*@
 </div>

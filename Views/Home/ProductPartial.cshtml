@@ -1,0 +1,23 @@
+﻿@model IEnumerable<TestSubject.Models.Product>
+
+<div class="products">
+    <table>
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Description</td>
+            <td>Action</td>
+        </tr>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>
+                        <button class="delete-btn" data-id="@product.Id">Удалить</button>
+                </td>
+            </tr>
+        }
+    </table>
+</div>

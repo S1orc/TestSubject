@@ -1,34 +1,107 @@
-﻿@model IndexViewModel
-@using TestSubject.Models
+﻿@using TestSubject.Models
 @using TestSubject.ViewModels
+@model IEnumerable<TestSubject.Models.Category>
+@using TestSubject.Controllers
 
-<style>
-    td {
-        padding: 5px;
-    }
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Тестовое ETAI</title>
 
-    tr:nth-child(even) {
-        background: #CCC;
-    }
-
-    tr:nth-child(odd) {
-        background: #FFF;
-    }
-</style>
-
-<div class="category">  
-    <label>Категории и продукты:</label>
-    @foreach(CategoryModel categ in Model.CategoriesModels)
-    {
-        <h1><option value="@categ.Id">@categ.Name:</option></h1>
-
-
-        @foreach (ProductModel prod in Model.ProductsModels)
-        {
-            if (prod.ParentId == categ.Id)
-            {
-              <h4><option value="@prod.Id">@prod.Name</option></h4>
-            }
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
         }
-    }
-</div>
+
+        p {
+            padding: 10px;
+        }
+
+        #left {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+        }
+
+        #right {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="left" class="category">
+        <label>Категории:</label>
+        @foreach (var category in Model)
+        {
+            await Html.RenderPartialAsync("CategoryPartial", category);
+        }
+    </div>
+
+    <div id="right" class="products">
+    </div>
+    <div>
+        <script>
+            function getProducts(categoryId) {
+                $.ajax({
+                    url: '/Home/GetProducts',
+                    type: 'GET',
+                    dataType: 'html',
+                    data: {
+                        CategoryId: categoryId
+                    },
+                    success: function (result) {
+                        $('#right').html(result);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log("Ajax error, textStatus:", textStatus, "errorThrown:", errorThrown);
+                    }
+                });
+            }
+
+            $(document).ready(function () {
+                $('.category-item').click(function () {
+                    var categoryId = $(this).data('id');
+                    getProducts(categoryId);
+                });
+            });
+        </script>
+
+
+        @*Функции для кнопок*@
+        <script>
+            function deleteProduct(productId) {
+                $.ajax({
+                    url: '/Home/DeleteProduct',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        ProductId: productId
+                    },
+                    success: function (result) {
+                        if (result.success) {
+                            var categoryId = $('.category-item.active').data('id');
+                            getProducts(categoryId);
+                        } else {
+                            console.log('Delete product error: ', result.message);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log("Ajax error, textStatus:", textStatus, "errorThrown:", errorThrown);
+                    }
+                });
+            }
+            $(document).ready(function () {
+                $('.delete-btn').click(function () {
+                    var productId = $(this).data('id');
+                    deleteProduct(productId);
+                });
+            });
+        </script>
+    </div>
+</body>
