@@ -41,15 +41,37 @@ namespace TestSubject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProducts(int? categoryId)
         {
-            var ResultingProducts = await db.Products.Where(p => p.CategoryId == categoryId).ToListAsync();
-            return PartialView("ProductPartial", ResultingProducts);
+            List<CategoryModel> categModels = db.Categories.Select(c => new CategoryModel(c.Id, c.Name, c.ParentId, c.Parent)).ToList();
+            var products = await db.Products.Where(p => p.CategoryId == categoryId).ToListAsync();
+
+            var ResultingProducts = products.Select(p => new ProductModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                CategoryId = p.CategoryId,
+            }).ToList();
+
+            ProductPartialViewModel viewModel = new() { ProductsModels = ResultingProducts, CategoriesModels = categModels };
+
+            return PartialView("ProductPartial", viewModel);
         }
 
-/*        [HttpPost]
-        public JsonResult AddProduct(ProductModel newProduct)
+        [HttpPost]
+        public async Task<IActionResult> AddProduct(ProductModel product)
         {
-            return View();
-        }*/
+            Product resultProduct = new Product();
+            resultProduct.Id = product.Id;
+            resultProduct.Name = product.Name;
+            resultProduct.Description = product.Description;
+            resultProduct.CategoryId = product.CategoryId;
+            resultProduct.Category = product.Category;
+
+            db.Products.Add(resultProduct);
+            await db.SaveChangesAsync();
+
+            return Ok();
+        }
 
         [HttpPost]
         public async Task<JsonResult> DeleteProduct(int? productId)
@@ -72,10 +94,25 @@ namespace TestSubject.Controllers
                 await db.SaveChangesAsync();
                 return Json(new { success = true, message = "Продукт успешно удален!" });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return Json(new {success = false, message = ex.Message});
+                return Json(new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditProduct(ProductModel product)
+        {
+            Product resultProduct = new Product();
+            resultProduct.Id = product.Id;
+            resultProduct.Name = product.Name;
+            resultProduct.Description = product.Description;
+            resultProduct.CategoryId = product.CategoryId;
+            resultProduct.Category = product.Category;
+
+            db.Products.Update(resultProduct);
+            await db.SaveChangesAsync();
+            return Ok();
         }
     }
 }

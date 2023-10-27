@@ -66,6 +66,8 @@
 
             $(document).ready(function () {
                 $('.category-item').click(function () {
+                    $('.category-item.active').removeClass('active');
+                    $(this).addClass('active');
                     var categoryId = $(this).data('id');
                     getProducts(categoryId);
                 });
@@ -85,6 +87,7 @@
                     },
                     success: function (result) {
                         if (result.success) {
+                            alert("Удаление успешно выполнено");
                             var categoryId = $('.category-item.active').data('id');
                             getProducts(categoryId);
                         } else {
@@ -97,7 +100,7 @@
                 });
             }
             $(document).ready(function () {
-                $('.delete-btn').click(function () {
+                $('body').on('click', '.delete-btn', function () {
                     var productId = $(this).data('id');
                     deleteProduct(productId);
                 });

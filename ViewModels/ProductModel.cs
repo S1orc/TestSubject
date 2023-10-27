@@ -2,5 +2,12 @@
 
 namespace TestSubject.ViewModels
 {
-    public record class ProductModel(int Id, string Name, string Description, int ParentId, Category Parent);
+    public record class ProductModel
+    {
+        public int Id { get; init; }
+        public string Name { get; init; }
+        public string? Description { get; init; }
+        public int CategoryId { get; init; }
+        public Category Category { get; init; }
+    }
 }

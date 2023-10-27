@@ -1,23 +1,255 @@
-﻿@model IEnumerable<TestSubject.Models.Product>
+﻿@using TestSubject.Models
+@using TestSubject.ViewModels
+@model ProductPartialViewModel
 
+
+
+<style>
+    textarea {
+        width: 100%;
+        resize: none;
+    }
+
+    /* Ставим кнопку по центру */
+
+    .content {
+        text-align: left;
+    }
+
+    /* Стили для содержимого popup окна */
+
+    input, textarea {
+        color: #494949;
+        border: 1px solid #e3e3e3;
+        border-radius: 3px;
+        background: #fff;
+        font-size: 14px;
+        margin: 0 0 10px;
+        padding: 5px;
+        width: 100%;
+        font-family: "Droid Serif", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+    }
+
+        input:focus {
+            border-color: #808080;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #808080;
+            outline: none;
+        }
+
+    select {
+        width: 100%;
+        resize: none;
+        border-color: #808080;
+        outline: none;
+        margin: 0 0 10px;
+    }
+
+    .overlay_popup {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        background: #000;
+        opacity: 0.5;
+    }
+
+    .popup {
+        display: none;
+        position: relative;
+        z-index: 1000;
+        margin: 0 25% 0 25%;
+        width: 50%;
+    }
+
+    /* Ещё немного стилей для popup окна */
+
+    .object {
+        width: 500px;
+        height: 500px;
+        background-color: #eee;
+        padding: 50px 70px;
+    }
+</style>
+
+@*Вывод продуктов*@
 <div class="products">
     <table>
         <tr>
             <td>Id</td>
-            <td>Name</td>
-            <td>Description</td>
-            <td>Action</td>
+            <td>Имя</td>
+            <td>Описание</td>
+            <td>Действие</td>
         </tr>
-        @foreach (var product in Model)
+        @foreach (var product in Model.ProductsModels)
         {
             <tr>
                 <td>@product.Id</td>
                 <td>@product.Name</td>
                 <td>@product.Description</td>
                 <td>
-                        <button class="delete-btn" data-id="@product.Id">Удалить</button>
+                    <button class="change-btn" rel="popup2" data-categoryid=@product.CategoryId>Изменить</button>
+                    <button class="delete-btn" data-id="@product.Id">Удалить</button>
                 </td>
             </tr>
         }
     </table>
+    <div class="content">
+        <button class="show_popup blue_btn" rel="popup1">Добавить новый продукт</button>
+    </div>
+
+    @*Окно для добавления продукта*@
+    <div class="overlay_popup"></div>
+    <div class="popup" id="popup1">
+        <div class="object">
+            <form action="/Home/AddProduct" method="post">
+                <p>Имя: </p>
+                <p><input type="text" name="name"></p>
+                <p>Описание: </p>
+                <p><textarea rows="10" cols="45" name="description"></textarea></p>
+                <p>Категория: </p>
+                <select name="CategoryId">
+                    @foreach (var category in Model.CategoriesModels)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+                <input type="submit" value="Добавить">
+            </form>
+        </div>
+    </div>
+
+    @*Окно для редактирования продукта*@
+    <div class="popup" id="editPopup">
+        <div class="object">
+            <form action="/Home/EditProduct" method="post">
+                <input type="hidden" name="id" id="editProductId" />
+                <p>Имя: </p>
+                <p><input type="text" name="name" id="editProductName" /></p>
+                <p>Описание: </p>
+                <p><textarea rows="10" cols="45" name="description" id="editProductDescription"></textarea></p>
+                <p>Категория: </p>
+                <select name="categoryId" id="editProductCategoryId">
+                    @foreach (var category in Model.CategoriesModels)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+                <input type="submit" value="Сохранить изменения">
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $('.show_popup').click(function () { // Вызываем функцию по нажатию на кнопку
+            var popup_id = $('#' + $(this).attr("rel")); // Связываем rel и popup_id
+            $(popup_id).show(); // Открываем окно
+            $('.overlay_popup').show(); // Открываем блок заднего фона
+        })
+        $('.overlay_popup').click(function () { // Обрабатываем клик по заднему фону
+            $('.overlay_popup, .popup').hide(); // Скрываем затемнённый задний фон и основное всплывающее окно
+        })
+    </script>
+
+    <script>
+        $('form').on('submit', function (e) { // Обрабатываем отправку формы
+            e.preventDefault();
+
+            var formData = new FormData(this);
+            var categoryId = $('select[name="CategoryId"]').val();
+
+            $.ajax({
+                url: '/Home/AddProduct', // URL контроллера и метода для добавления продукта
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    // Здесь код, который выполнится при успешном ответе от сервера
+                    $('.overlay_popup, .popup').hide(); // скрываем popup после успешной отправки данных
+
+                    $.ajax({
+                        url: '/Home/GetProducts',
+                        type: 'GET',
+                        data: {
+                            CategoryId: categoryId
+                        },
+                        success: function (data) {
+                            $('#right').html(data);
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            alert(thrownError);
+                        }
+                    });
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert(thrownError);
+                }
+            });
+        });
+    </script>
+
+    @*Скрипт для редактирования продукта*@
+    <script>
+        $('.change-btn').click(function () {
+            var row = $(this).closest('tr');
+            var productId = row.find('td:first-child').text();
+            var productName = row.find('td:nth-child(2)').text();
+            var productDescription = row.find('td:nth-child(3)').text();
+            var productCategoryId = $(this).data('categoryid');
+
+            $('#editProductId').val(productId);
+            $('#editProductName').val(productName);
+            $('#editProductDescription').val(productDescription);
+            $('#editProductCategoryId').val(productCategoryId);
+
+            var editPopup = $('#editPopup');
+            editPopup.show();
+            $('.overlay_popup').show();
+
+            $('#editPopup form').on('submit', function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+                var productId = $('#editProductId').val();
+                var categoryId = $('#editProductCategoryId').val();
+
+                $.ajax({
+                    url: '/Home/EditProduct', // URL контроллера и метода для изменения продукта
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        // Здесь код, который выполнится при успешном ответе от сервера
+                        $('.overlay_popup, .popup').hide(); // скрываем popup после успешной отправки данных
+
+                        $.ajax({
+                            url: '/Home/GetProducts',
+                            type: 'GET',
+                            data: {
+                                CategoryId: categoryId
+                            },
+                            success: function (data) {
+                                $('#right').html(data);
+                            },
+                            error: function (xhr, ajaxOptions, thrownError) {
+                                alert(thrownError);
+                            }
+                        });
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert(thrownError);
+                    }
+                });
+            });
+        });
+    </script>
 </div>
